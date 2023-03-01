@@ -19,4 +19,4 @@ add_subdirectory(external)
 add_subdirectory(cpp)
 
 # Python Wrapper
-# add_subdirectory(apps)
+add_subdirectory(python)
