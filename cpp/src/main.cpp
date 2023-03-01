@@ -13,7 +13,7 @@ int main() {
     assert(!tex.empty());
     auto format = tex.format();
     auto extent = tex.extent();
-    std::cout << extent.x << ", " << extent.y << ", " << 4 << std::endl;
+    std::cout << extent.x << ", " << extent.y << ", " << 4 << ", " << format << std::endl;
     stbi_write_png("output.png", extent.x, extent.y, 4, tex.data(), extent.x * 4);
     return 0;
 }
