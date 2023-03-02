@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 3.10)
-project(pygli)
+cmake_minimum_required(VERSION 3.15...3.25)
+project(pygli VERSION ${SKBUILD_PROJECT_VERSION})
 
 # CMake Include's
 include(ExternalProject)
