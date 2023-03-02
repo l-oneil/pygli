@@ -15,8 +15,5 @@ set(CMAKE_CXX_FLAGS_RELEASE_INIT "-O3 ${COMMON_FLAGS}")
 # Third Party
 add_subdirectory(external)
 
-# Library
-add_subdirectory(cpp)
-
-# Python Wrapper
-add_subdirectory(python)
+# Python Library
+add_subdirectory(src)

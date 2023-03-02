@@ -31,19 +31,6 @@
             }
         },
         {
-            "label": "Debug: Run",
-            "type": "shell",
-            "command": "${workspaceFolder}/build-debug/cpp/main",
-            "problemMatcher": [],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "options": {
-                "cwd": "${workspaceFolder}"
-            }
-        },
-        {
             "label": "Debug: Clean",
             "type": "shell",
             "command": "rm -rf ${workspaceFolder}/build-debug",
