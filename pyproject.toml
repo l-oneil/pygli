@@ -24,10 +24,11 @@ classifiers = [
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
 ]
+dependencies = ["numpy"]
 
 
 [project.optional-dependencies]
-test = ["pytest", "numpy"]
+test = ["pytest"]
 
 
 [tool.scikit-build]

@@ -7,22 +7,32 @@
 
 #include <gli/gli.hpp>
 
+#include "float_convert.hpp"
+
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
 
 namespace py = pybind11;
 
 
-inline float half_to_float(std::uint16_t h) {
-    float f = ((h&0x8000)<<16) | (((h&0x7c00)+0x1C000)<<13) | ((h&0x03FF)<<13);
-    return f;
-}
+py::array_t<float> half_to_float(py::array_t<uint16_t> half_arr) {
+      py::buffer_info in = half_arr.request();
 
+      /* No pointer is passed, so NumPy will allocate the buffer */
+      auto out_arr = py::array_t<float>(in.shape);
+      py::buffer_info out = out_arr.request();
 
-inline std::uint16_t float_to_half(float f) {
-    uint32_t x = *((uint32_t*)&f);
-    uint16_t h = ((x>>16)&0x8000)|((((x&0x7f800000)-0x38000000)>>13)&0x7c00)|((x>>13)&0x03ff);
-    return h;
+      uint16_t *in_ptr = static_cast<uint16_t *>(in.ptr);
+      float *out_ptr = static_cast<float *>(out.ptr);
+
+      size_t length = 1;
+      for (size_t n = 0; n < in.ndim; n++)
+            length *= in.shape[n];
+      
+      for (size_t x = 0; x < length; x++)
+            out_ptr[x] = half_to_float(in_ptr[x]);
+      
+      return out_arr;
 }
 
 
@@ -33,8 +43,8 @@ py::array load(std::string &filepath) {
     auto extent = tex.extent();
     std::vector<int> shape = {extent.y, extent.x};
     py::array arr;
+    py::array_t<std::uint16_t> half_arr;
 
-    //TODO: fix SFLOAT 16 - current cast to float isn't correct
     switch(format) {
       case gli::FORMAT_R8_UNORM_PACK8:
             shape.push_back(1);
@@ -236,7 +246,8 @@ py::array load(std::string &filepath) {
             break;
       case gli::FORMAT_R16_SFLOAT_PACK16:
             shape.push_back(1);
-            arr = py::array_t<float>(shape, (float *) tex.data());
+            half_arr = py::array_t<std::uint16_t>(shape, (std::uint16_t *) tex.data());
+            arr = half_to_float(half_arr);
             break;
 
       case gli::FORMAT_RG16_UNORM_PACK16:
@@ -265,7 +276,8 @@ py::array load(std::string &filepath) {
             break;
       case gli::FORMAT_RG16_SFLOAT_PACK16:
             shape.push_back(2);
-            arr = py::array_t<float>(shape, (float *) tex.data());
+            half_arr = py::array_t<std::uint16_t>(shape, (std::uint16_t *) tex.data());
+            arr = half_to_float(half_arr);
             break;
 
       case gli::FORMAT_RGB16_UNORM_PACK16:
@@ -294,7 +306,8 @@ py::array load(std::string &filepath) {
             break;
       case gli::FORMAT_RGB16_SFLOAT_PACK16:
             shape.push_back(3);
-            arr = py::array_t<float>(shape, (float *) tex.data());
+            half_arr = py::array_t<std::uint16_t>(shape, (std::uint16_t *) tex.data());
+            arr = half_to_float(half_arr);
             break;
 
       case gli::FORMAT_RGBA16_UNORM_PACK16:
@@ -323,7 +336,8 @@ py::array load(std::string &filepath) {
             break;
       case gli::FORMAT_RGBA16_SFLOAT_PACK16:
             shape.push_back(4);
-            arr = py::array_t<float>(shape, (float *) tex.data());
+            half_arr = py::array_t<std::uint16_t>(shape, (std::uint16_t *) tex.data());
+            arr = half_to_float(half_arr);
             break;
 
       case gli::FORMAT_R32_UINT_PACK32:
