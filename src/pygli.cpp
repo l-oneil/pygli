@@ -6,6 +6,7 @@
 #include <pybind11/numpy.h>
 
 #include <gli/gli.hpp>
+#include "gli/type.hpp"
 
 #include "float_convert.hpp"
 
@@ -456,16 +457,580 @@ py::array load(std::string &filepath) {
       // FORMAT_D32_SFLOAT_S8_UINT_PACK64
 
         default:
-            throw std::invalid_argument("Unrecognised Format");
+            throw std::invalid_argument("Unrecognised Load Format");
     }
 
     return arr;
 }
 
 
+template <typename T>
+void write_texel(void *ptr, gli::texture &tex, const gli::extent3d &coord, const size_t idx) {
+    const T *texel = reinterpret_cast<T *>(ptr);
+    tex.store<T>(coord, 0, 0, 0, texel[idx]);
+}
+
+
+bool save(std::string filepath, py::array array, gli::format format) {
+    py::buffer_info buf = array.request();
+    if (buf.ndim != 3)
+        throw std::runtime_error("Number of dimensions must be 3");
+    
+    // Create Texture 
+    gli::extent3d ext = {buf.shape[1], buf.shape[0], 1};
+    gli::texture tex = gli::texture(gli::TARGET_3D, format, ext, 1, 1, 1);
+
+    // Populate Texture 
+    for (size_t y = 0; y < array.shape(1); y++) {
+        for (size_t x = 0; x < array.shape(0); x++) {
+            const gli::extent3d coord(x, y, 0);
+            const size_t idx = y * array.shape(0) + x;
+            switch(format){
+                case gli::FORMAT_R8_UNORM_PACK8:
+                    write_texel<glm::u8>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_R8_SNORM_PACK8:
+                    write_texel<glm::u8>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_R8_USCALED_PACK8:
+                    write_texel<glm::u8>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_R8_SSCALED_PACK8:
+                    write_texel<std::uint8_t>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_R8_UINT_PACK8:
+                    write_texel<glm::u8>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_R8_SINT_PACK8:
+                    write_texel<glm::u8>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_R8_SRGB_PACK8:
+                    write_texel<glm::u8>(buf.ptr, tex, coord, idx);
+                    break;
+
+                case gli::FORMAT_RG8_UNORM_PACK8:
+                    write_texel<glm::u8vec2>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RG8_SNORM_PACK8:
+                    write_texel<glm::u8vec2>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RG8_USCALED_PACK8:
+                    write_texel<glm::u8vec2>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RG8_SSCALED_PACK8:
+                    write_texel<glm::u8vec2>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RG8_UINT_PACK8:
+                    write_texel<glm::u8vec2>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RG8_SINT_PACK8:
+                    write_texel<glm::u8vec2>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RG8_SRGB_PACK8:
+                    write_texel<glm::u8vec2>(buf.ptr, tex, coord, idx);
+                    break;
+
+                case gli::FORMAT_RGB8_UNORM_PACK8:
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGB8_SNORM_PACK8:
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGB8_USCALED_PACK8:
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGB8_SSCALED_PACK8:
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGB8_UINT_PACK8:
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGB8_SINT_PACK8:
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGB8_SRGB_PACK8:
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    break;
+
+                case gli::FORMAT_BGR8_UNORM_PACK8:
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_BGR8_SNORM_PACK8:
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_BGR8_USCALED_PACK8:
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_BGR8_SSCALED_PACK8:
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_BGR8_UINT_PACK8:
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_BGR8_SINT_PACK8:
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_BGR8_SRGB_PACK8:
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    break;
+
+                case gli::FORMAT_RGBA8_UNORM_PACK8:
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA8_SNORM_PACK8:
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA8_USCALED_PACK8:
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA8_SSCALED_PACK8:
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA8_UINT_PACK8:
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA8_SINT_PACK8:
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA8_SRGB_PACK8:
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    break;
+
+                case gli::FORMAT_RGBA8_UNORM_PACK32:
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA8_SNORM_PACK32:
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA8_USCALED_PACK32:
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA8_SSCALED_PACK32:
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA8_UINT_PACK32:
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA8_SINT_PACK32:
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA8_SRGB_PACK32:
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    break;
+
+                case gli::FORMAT_R16_UNORM_PACK16:
+                    write_texel<glm::u16>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_R16_SNORM_PACK16:
+                    write_texel<glm::u16>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_R16_USCALED_PACK16:
+                    write_texel<glm::u16>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_R16_SSCALED_PACK16:
+                    write_texel<glm::u16>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_R16_UINT_PACK16:
+                    write_texel<glm::u16>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_R16_SINT_PACK16:
+                    write_texel<glm::u16>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_R16_SFLOAT_PACK16:
+                    write_texel<glm::u16>(buf.ptr, tex, coord, idx);
+                    break;
+
+                case gli::FORMAT_RG16_UNORM_PACK16:
+                    write_texel<glm::u16vec2>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RG16_SNORM_PACK16:
+                    write_texel<glm::u16vec2>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RG16_USCALED_PACK16:
+                    write_texel<glm::u16vec2>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RG16_SSCALED_PACK16:
+                    write_texel<glm::u16vec2>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RG16_UINT_PACK16:
+                    write_texel<glm::u16vec2>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RG16_SINT_PACK16:
+                    write_texel<glm::u16vec2>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RG16_SFLOAT_PACK16:
+                    write_texel<glm::u16vec2>(buf.ptr, tex, coord, idx);
+                    break;
+
+                case gli::FORMAT_RGB16_UNORM_PACK16:
+                    write_texel<glm::u16vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGB16_SNORM_PACK16:
+                    write_texel<glm::u16vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGB16_USCALED_PACK16:
+                    write_texel<glm::u16vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGB16_SSCALED_PACK16:
+                    write_texel<glm::u16vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGB16_UINT_PACK16:
+                    write_texel<glm::u16vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGB16_SINT_PACK16:
+                    write_texel<glm::u16vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGB16_SFLOAT_PACK16:
+                    write_texel<glm::u16vec3>(buf.ptr, tex, coord, idx);
+                    break;
+
+                case gli::FORMAT_RGBA16_UNORM_PACK16:
+                    write_texel<glm::u16vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA16_SNORM_PACK16:
+                    write_texel<glm::u16vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA16_USCALED_PACK16:
+                    write_texel<glm::u16vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA16_SSCALED_PACK16:
+                    write_texel<glm::u16vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA16_UINT_PACK16:
+                    write_texel<glm::u16vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA16_SINT_PACK16:
+                    write_texel<glm::u16vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA16_SFLOAT_PACK16:
+                    write_texel<glm::u16vec4>(buf.ptr, tex, coord, idx);
+                    break;
+
+                case gli::FORMAT_R32_UINT_PACK32:
+                    write_texel<glm::u32>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_R32_SINT_PACK32:
+                    write_texel<glm::u32>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_R32_SFLOAT_PACK32:
+                    write_texel<glm::u32>(buf.ptr, tex, coord, idx);
+                    break;
+
+                case gli::FORMAT_RG32_UINT_PACK32:
+                    write_texel<glm::u32vec2>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RG32_SINT_PACK32:
+                    write_texel<glm::u32vec2>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RG32_SFLOAT_PACK32:
+                    write_texel<glm::u32vec2>(buf.ptr, tex, coord, idx);
+                    break;
+
+                case gli::FORMAT_RGB32_UINT_PACK32:
+                    write_texel<glm::u32vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGB32_SINT_PACK32:
+                    write_texel<glm::u32vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGB32_SFLOAT_PACK32:
+                    write_texel<glm::u32vec3>(buf.ptr, tex, coord, idx);
+                    break;
+
+                case gli::FORMAT_RGBA32_UINT_PACK32:
+                    write_texel<glm::u32vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA32_SINT_PACK32:
+                    write_texel<glm::u32vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA32_SFLOAT_PACK32:
+                    write_texel<glm::u32vec4>(buf.ptr, tex, coord, idx);
+                    break;
+
+                case gli::FORMAT_R64_UINT_PACK64:
+                    write_texel<glm::u64>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_R64_SINT_PACK64:
+                    write_texel<glm::u64>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_R64_SFLOAT_PACK64:
+                    write_texel<glm::u64>(buf.ptr, tex, coord, idx);
+                    break;
+
+                case gli::FORMAT_RG64_UINT_PACK64:
+                    write_texel<glm::u64vec2>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RG64_SINT_PACK64:
+                    write_texel<glm::u64vec2>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RG64_SFLOAT_PACK64:
+                    write_texel<glm::u64vec2>(buf.ptr, tex, coord, idx);
+                    break;
+
+                case gli::FORMAT_RGB64_UINT_PACK64:
+                    write_texel<glm::u64vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGB64_SINT_PACK64:
+                    write_texel<glm::u64vec3>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGB64_SFLOAT_PACK64:
+                    write_texel<glm::u64vec3>(buf.ptr, tex, coord, idx);
+                    break;
+
+                case gli::FORMAT_RGBA64_UINT_PACK64:
+                    write_texel<glm::u64vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA64_SINT_PACK64:
+                    write_texel<glm::u64vec4>(buf.ptr, tex, coord, idx);
+                    break;
+                case gli::FORMAT_RGBA64_SFLOAT_PACK64:
+                    write_texel<glm::u64vec4>(buf.ptr, tex, coord, idx);
+                    break;
+
+                //TODO:
+                // FORMAT_RG11B10_UFLOAT_PACK32,
+                // FORMAT_RGB9E5_UFLOAT_PACK32,
+                // FORMAT_D16_UNORM_PACK16,
+                // FORMAT_D24_UNORM_PACK32,
+                // FORMAT_D32_SFLOAT_PACK32,
+                // FORMAT_S8_UINT_PACK8,
+                // FORMAT_D16_UNORM_S8_UINT_PACK32,
+                // FORMAT_D24_UNORM_S8_UINT_PACK32,
+                // FORMAT_D32_SFLOAT_S8_UINT_PACK64
+
+                default:
+                    throw std::invalid_argument("Unrecognised Save Format");
+            }
+        }
+    }
+
+    // Save Texture
+    bool ret = gli::save(tex, filepath);
+      
+    return ret;
+}
+
+
+void add_format_enum(py::module &m) {
+    py::enum_<gli::format>(m, "Format")
+        .value("FORMAT_UNDEFINED", gli::FORMAT_UNDEFINED)
+		.value("FORMAT_RG4_UNORM_PACK8", gli::FORMAT_RG4_UNORM_PACK8)
+		.value("FORMAT_RGBA4_UNORM_PACK16", gli::FORMAT_RGBA4_UNORM_PACK16)
+		.value("FORMAT_BGRA4_UNORM_PACK16", gli::FORMAT_BGRA4_UNORM_PACK16)
+		.value("FORMAT_R5G6B5_UNORM_PACK16", gli::FORMAT_R5G6B5_UNORM_PACK16)
+		.value("FORMAT_B5G6R5_UNORM_PACK16", gli::FORMAT_B5G6R5_UNORM_PACK16)
+		.value("FORMAT_RGB5A1_UNORM_PACK16", gli::FORMAT_RGB5A1_UNORM_PACK16)
+		.value("FORMAT_BGR5A1_UNORM_PACK16", gli::FORMAT_BGR5A1_UNORM_PACK16)
+		.value("FORMAT_A1RGB5_UNORM_PACK16", gli::FORMAT_A1RGB5_UNORM_PACK16)
+		.value("FORMAT_R8_UNORM_PACK8", gli::FORMAT_R8_UNORM_PACK8)
+		.value("FORMAT_R8_SNORM_PACK8", gli::FORMAT_R8_SNORM_PACK8)
+		.value("FORMAT_R8_USCALED_PACK8", gli::FORMAT_R8_USCALED_PACK8)
+		.value("FORMAT_R8_SSCALED_PACK8", gli::FORMAT_R8_SSCALED_PACK8)
+		.value("FORMAT_R8_UINT_PACK8", gli::FORMAT_R8_UINT_PACK8)
+		.value("FORMAT_R8_SINT_PACK8", gli::FORMAT_R8_SINT_PACK8)
+		.value("FORMAT_R8_SRGB_PACK8", gli::FORMAT_R8_SRGB_PACK8)
+		.value("FORMAT_RG8_UNORM_PACK8", gli::FORMAT_RG8_UNORM_PACK8)
+		.value("FORMAT_RG8_SNORM_PACK8", gli::FORMAT_RG8_SNORM_PACK8)
+		.value("FORMAT_RG8_USCALED_PACK8", gli::FORMAT_RG8_USCALED_PACK8)
+		.value("FORMAT_RG8_SSCALED_PACK8", gli::FORMAT_RG8_SSCALED_PACK8)
+		.value("FORMAT_RG8_UINT_PACK8", gli::FORMAT_RG8_UINT_PACK8)
+		.value("FORMAT_RG8_SINT_PACK8", gli::FORMAT_RG8_SINT_PACK8)
+		.value("FORMAT_RG8_SRGB_PACK8", gli::FORMAT_RG8_SRGB_PACK8)
+		.value("FORMAT_RGB8_UNORM_PACK8", gli::FORMAT_RGB8_UNORM_PACK8)
+		.value("FORMAT_RGB8_SNORM_PACK8", gli::FORMAT_RGB8_SNORM_PACK8)
+		.value("FORMAT_RGB8_USCALED_PACK8", gli::FORMAT_RGB8_USCALED_PACK8)
+		.value("FORMAT_RGB8_SSCALED_PACK8", gli::FORMAT_RGB8_SSCALED_PACK8)
+		.value("FORMAT_RGB8_UINT_PACK8", gli::FORMAT_RGB8_UINT_PACK8)
+		.value("FORMAT_RGB8_SINT_PACK8", gli::FORMAT_RGB8_SINT_PACK8)
+		.value("FORMAT_RGB8_SRGB_PACK8", gli::FORMAT_RGB8_SRGB_PACK8)
+		.value("FORMAT_BGR8_UNORM_PACK8", gli::FORMAT_BGR8_UNORM_PACK8)
+		.value("FORMAT_BGR8_SNORM_PACK8", gli::FORMAT_BGR8_SNORM_PACK8)
+		.value("FORMAT_BGR8_USCALED_PACK8", gli::FORMAT_BGR8_USCALED_PACK8)
+		.value("FORMAT_BGR8_SSCALED_PACK8", gli::FORMAT_BGR8_SSCALED_PACK8)
+		.value("FORMAT_BGR8_UINT_PACK8", gli::FORMAT_BGR8_UINT_PACK8)
+		.value("FORMAT_BGR8_SINT_PACK8", gli::FORMAT_BGR8_SINT_PACK8)
+		.value("FORMAT_BGR8_SRGB_PACK8", gli::FORMAT_BGR8_SRGB_PACK8)
+		.value("FORMAT_RGBA8_UNORM_PACK8", gli::FORMAT_RGBA8_UNORM_PACK8)
+		.value("FORMAT_RGBA8_SNORM_PACK8", gli::FORMAT_RGBA8_SNORM_PACK8)
+		.value("FORMAT_RGBA8_USCALED_PACK8", gli::FORMAT_RGBA8_USCALED_PACK8)
+		.value("FORMAT_RGBA8_SSCALED_PACK8", gli::FORMAT_RGBA8_SSCALED_PACK8)
+		.value("FORMAT_RGBA8_UINT_PACK8", gli::FORMAT_RGBA8_UINT_PACK8)
+		.value("FORMAT_RGBA8_SINT_PACK8", gli::FORMAT_RGBA8_SINT_PACK8)
+		.value("FORMAT_RGBA8_SRGB_PACK8", gli::FORMAT_RGBA8_SRGB_PACK8)
+		.value("FORMAT_BGRA8_UNORM_PACK8", gli::FORMAT_BGRA8_UNORM_PACK8)
+		.value("FORMAT_BGRA8_SNORM_PACK8", gli::FORMAT_BGRA8_SNORM_PACK8)
+		.value("FORMAT_BGRA8_USCALED_PACK8", gli::FORMAT_BGRA8_USCALED_PACK8)
+		.value("FORMAT_BGRA8_SSCALED_PACK8", gli::FORMAT_BGRA8_SSCALED_PACK8)
+		.value("FORMAT_BGRA8_UINT_PACK8", gli::FORMAT_BGRA8_UINT_PACK8)
+		.value("FORMAT_BGRA8_SINT_PACK8", gli::FORMAT_BGRA8_SINT_PACK8)
+		.value("FORMAT_BGRA8_SRGB_PACK8", gli::FORMAT_BGRA8_SRGB_PACK8)
+		.value("FORMAT_RGBA8_UNORM_PACK32", gli::FORMAT_RGBA8_UNORM_PACK32)
+		.value("FORMAT_RGBA8_SNORM_PACK32", gli::FORMAT_RGBA8_SNORM_PACK32)
+		.value("FORMAT_RGBA8_USCALED_PACK32", gli::FORMAT_RGBA8_USCALED_PACK32)
+		.value("FORMAT_RGBA8_SSCALED_PACK32", gli::FORMAT_RGBA8_SSCALED_PACK32)
+		.value("FORMAT_RGBA8_UINT_PACK32", gli::FORMAT_RGBA8_UINT_PACK32)
+		.value("FORMAT_RGBA8_SINT_PACK32", gli::FORMAT_RGBA8_SINT_PACK32)
+		.value("FORMAT_RGBA8_SRGB_PACK32", gli::FORMAT_RGBA8_SRGB_PACK32)
+		.value("FORMAT_RGB10A2_UNORM_PACK32", gli::FORMAT_RGB10A2_UNORM_PACK32)
+		.value("FORMAT_RGB10A2_SNORM_PACK32", gli::FORMAT_RGB10A2_SNORM_PACK32)
+		.value("FORMAT_RGB10A2_USCALED_PACK32", gli::FORMAT_RGB10A2_USCALED_PACK32)
+		.value("FORMAT_RGB10A2_SSCALED_PACK32", gli::FORMAT_RGB10A2_SSCALED_PACK32)
+		.value("FORMAT_RGB10A2_UINT_PACK32", gli::FORMAT_RGB10A2_UINT_PACK32)
+		.value("FORMAT_RGB10A2_SINT_PACK32", gli::FORMAT_RGB10A2_SINT_PACK32)
+		.value("FORMAT_BGR10A2_UNORM_PACK32", gli::FORMAT_BGR10A2_UNORM_PACK32)
+		.value("FORMAT_BGR10A2_SNORM_PACK32", gli::FORMAT_BGR10A2_SNORM_PACK32)
+		.value("FORMAT_BGR10A2_USCALED_PACK32", gli::FORMAT_BGR10A2_USCALED_PACK32)
+		.value("FORMAT_BGR10A2_SSCALED_PACK32", gli::FORMAT_BGR10A2_SSCALED_PACK32)
+		.value("FORMAT_BGR10A2_UINT_PACK32", gli::FORMAT_BGR10A2_UINT_PACK32)
+		.value("FORMAT_BGR10A2_SINT_PACK32", gli::FORMAT_BGR10A2_SINT_PACK32)
+		.value("FORMAT_R16_UNORM_PACK16", gli::FORMAT_R16_UNORM_PACK16)
+		.value("FORMAT_R16_SNORM_PACK16", gli::FORMAT_R16_SNORM_PACK16)
+		.value("FORMAT_R16_USCALED_PACK16", gli::FORMAT_R16_USCALED_PACK16)
+		.value("FORMAT_R16_SSCALED_PACK16", gli::FORMAT_R16_SSCALED_PACK16)
+		.value("FORMAT_R16_UINT_PACK16", gli::FORMAT_R16_UINT_PACK16)
+		.value("FORMAT_R16_SINT_PACK16", gli::FORMAT_R16_SINT_PACK16)
+		.value("FORMAT_R16_SFLOAT_PACK16", gli::FORMAT_R16_SFLOAT_PACK16)
+		.value("FORMAT_RG16_UNORM_PACK16", gli::FORMAT_RG16_UNORM_PACK16)
+		.value("FORMAT_RG16_SNORM_PACK16", gli::FORMAT_RG16_SNORM_PACK16)
+		.value("FORMAT_RG16_USCALED_PACK16", gli::FORMAT_RG16_USCALED_PACK16)
+		.value("FORMAT_RG16_SSCALED_PACK16", gli::FORMAT_RG16_SSCALED_PACK16)
+		.value("FORMAT_RG16_UINT_PACK16", gli::FORMAT_RG16_UINT_PACK16)
+		.value("FORMAT_RG16_SINT_PACK16", gli::FORMAT_RG16_SINT_PACK16)
+		.value("FORMAT_RG16_SFLOAT_PACK16", gli::FORMAT_RG16_SFLOAT_PACK16)
+		.value("FORMAT_RGB16_UNORM_PACK16", gli::FORMAT_RGB16_UNORM_PACK16)
+		.value("FORMAT_RGB16_SNORM_PACK16", gli::FORMAT_RGB16_SNORM_PACK16)
+		.value("FORMAT_RGB16_USCALED_PACK16", gli::FORMAT_RGB16_USCALED_PACK16)
+		.value("FORMAT_RGB16_SSCALED_PACK16", gli::FORMAT_RGB16_SSCALED_PACK16)
+		.value("FORMAT_RGB16_UINT_PACK16", gli::FORMAT_RGB16_UINT_PACK16)
+		.value("FORMAT_RGB16_SINT_PACK16", gli::FORMAT_RGB16_SINT_PACK16)
+		.value("FORMAT_RGB16_SFLOAT_PACK16", gli::FORMAT_RGB16_SFLOAT_PACK16)
+		.value("FORMAT_RGBA16_UNORM_PACK16", gli::FORMAT_RGBA16_UNORM_PACK16)
+		.value("FORMAT_RGBA16_SNORM_PACK16", gli::FORMAT_RGBA16_SNORM_PACK16)
+		.value("FORMAT_RGBA16_USCALED_PACK16", gli::FORMAT_RGBA16_USCALED_PACK16)
+		.value("FORMAT_RGBA16_SSCALED_PACK16", gli::FORMAT_RGBA16_SSCALED_PACK16)
+		.value("FORMAT_RGBA16_UINT_PACK16", gli::FORMAT_RGBA16_UINT_PACK16)
+		.value("FORMAT_RGBA16_SINT_PACK16", gli::FORMAT_RGBA16_SINT_PACK16)
+		.value("FORMAT_RGBA16_SFLOAT_PACK16", gli::FORMAT_RGBA16_SFLOAT_PACK16)
+		.value("FORMAT_R32_UINT_PACK32", gli::FORMAT_R32_UINT_PACK32)
+		.value("FORMAT_R32_SINT_PACK32", gli::FORMAT_R32_SINT_PACK32)
+		.value("FORMAT_R32_SFLOAT_PACK32", gli::FORMAT_R32_SFLOAT_PACK32)
+		.value("FORMAT_RG32_UINT_PACK32", gli::FORMAT_RG32_UINT_PACK32)
+		.value("FORMAT_RG32_SINT_PACK32", gli::FORMAT_RG32_SINT_PACK32)
+		.value("FORMAT_RG32_SFLOAT_PACK32", gli::FORMAT_RG32_SFLOAT_PACK32)
+		.value("FORMAT_RGB32_UINT_PACK32", gli::FORMAT_RGB32_UINT_PACK32)
+		.value("FORMAT_RGB32_SINT_PACK32", gli::FORMAT_RGB32_SINT_PACK32)
+		.value("FORMAT_RGB32_SFLOAT_PACK32", gli::FORMAT_RGB32_SFLOAT_PACK32)
+		.value("FORMAT_RGBA32_UINT_PACK32", gli::FORMAT_RGBA32_UINT_PACK32)
+		.value("FORMAT_RGBA32_SINT_PACK32", gli::FORMAT_RGBA32_SINT_PACK32)
+		.value("FORMAT_RGBA32_SFLOAT_PACK32", gli::FORMAT_RGBA32_SFLOAT_PACK32)
+		.value("FORMAT_R64_UINT_PACK64", gli::FORMAT_R64_UINT_PACK64)
+		.value("FORMAT_R64_SINT_PACK64", gli::FORMAT_R64_SINT_PACK64)
+		.value("FORMAT_R64_SFLOAT_PACK64", gli::FORMAT_R64_SFLOAT_PACK64)
+		.value("FORMAT_RG64_UINT_PACK64", gli::FORMAT_RG64_UINT_PACK64)
+		.value("FORMAT_RG64_SINT_PACK64", gli::FORMAT_RG64_SINT_PACK64)
+		.value("FORMAT_RG64_SFLOAT_PACK64", gli::FORMAT_RG64_SFLOAT_PACK64)
+		.value("FORMAT_RGB64_UINT_PACK64", gli::FORMAT_RGB64_UINT_PACK64)
+		.value("FORMAT_RGB64_SINT_PACK64", gli::FORMAT_RGB64_SINT_PACK64)
+		.value("FORMAT_RGB64_SFLOAT_PACK64", gli::FORMAT_RGB64_SFLOAT_PACK64)
+		.value("FORMAT_RGBA64_UINT_PACK64", gli::FORMAT_RGBA64_UINT_PACK64)
+		.value("FORMAT_RGBA64_SINT_PACK64", gli::FORMAT_RGBA64_SINT_PACK64)
+		.value("FORMAT_RGBA64_SFLOAT_PACK64", gli::FORMAT_RGBA64_SFLOAT_PACK64)
+		.value("FORMAT_RG11B10_UFLOAT_PACK32", gli::FORMAT_RG11B10_UFLOAT_PACK32)
+		.value("FORMAT_RGB9E5_UFLOAT_PACK32", gli::FORMAT_RGB9E5_UFLOAT_PACK32)
+		.value("FORMAT_D16_UNORM_PACK16", gli::FORMAT_D16_UNORM_PACK16)
+		.value("FORMAT_D24_UNORM_PACK32", gli::FORMAT_D24_UNORM_PACK32)
+		.value("FORMAT_D32_SFLOAT_PACK32", gli::FORMAT_D32_SFLOAT_PACK32)
+		.value("FORMAT_S8_UINT_PACK8", gli::FORMAT_S8_UINT_PACK8)
+		.value("FORMAT_D16_UNORM_S8_UINT_PACK32", gli::FORMAT_D16_UNORM_S8_UINT_PACK32)
+		.value("FORMAT_D24_UNORM_S8_UINT_PACK32", gli::FORMAT_D24_UNORM_S8_UINT_PACK32)
+		.value("FORMAT_D32_SFLOAT_S8_UINT_PACK64", gli::FORMAT_D32_SFLOAT_S8_UINT_PACK64)
+		.value("FORMAT_RGB_DXT1_UNORM_BLOCK8", gli::FORMAT_RGB_DXT1_UNORM_BLOCK8)
+		.value("FORMAT_RGB_DXT1_SRGB_BLOCK8", gli::FORMAT_RGB_DXT1_SRGB_BLOCK8)
+		.value("FORMAT_RGBA_DXT1_UNORM_BLOCK8", gli::FORMAT_RGBA_DXT1_UNORM_BLOCK8)
+		.value("FORMAT_RGBA_DXT1_SRGB_BLOCK8", gli::FORMAT_RGBA_DXT1_SRGB_BLOCK8)
+		.value("FORMAT_RGBA_DXT3_UNORM_BLOCK16", gli::FORMAT_RGBA_DXT3_UNORM_BLOCK16)
+		.value("FORMAT_RGBA_DXT3_SRGB_BLOCK16", gli::FORMAT_RGBA_DXT3_SRGB_BLOCK16)
+		.value("FORMAT_RGBA_DXT5_UNORM_BLOCK16", gli::FORMAT_RGBA_DXT5_UNORM_BLOCK16)
+		.value("FORMAT_RGBA_DXT5_SRGB_BLOCK16", gli::FORMAT_RGBA_DXT5_SRGB_BLOCK16)
+		.value("FORMAT_R_ATI1N_UNORM_BLOCK8", gli::FORMAT_R_ATI1N_UNORM_BLOCK8)
+		.value("FORMAT_R_ATI1N_SNORM_BLOCK8", gli::FORMAT_R_ATI1N_SNORM_BLOCK8)
+		.value("FORMAT_RG_ATI2N_UNORM_BLOCK16", gli::FORMAT_RG_ATI2N_UNORM_BLOCK16)
+		.value("FORMAT_RG_ATI2N_SNORM_BLOCK16", gli::FORMAT_RG_ATI2N_SNORM_BLOCK16)
+		.value("FORMAT_RGB_BP_UFLOAT_BLOCK16", gli::FORMAT_RGB_BP_UFLOAT_BLOCK16)
+		.value("FORMAT_RGB_BP_SFLOAT_BLOCK16", gli::FORMAT_RGB_BP_SFLOAT_BLOCK16)
+		.value("FORMAT_RGBA_BP_UNORM_BLOCK16", gli::FORMAT_RGBA_BP_UNORM_BLOCK16)
+		.value("FORMAT_RGBA_BP_SRGB_BLOCK16", gli::FORMAT_RGBA_BP_SRGB_BLOCK16)
+		.value("FORMAT_RGB_ETC2_UNORM_BLOCK8", gli::FORMAT_RGB_ETC2_UNORM_BLOCK8)
+		.value("FORMAT_RGB_ETC2_SRGB_BLOCK8", gli::FORMAT_RGB_ETC2_SRGB_BLOCK8)
+		.value("FORMAT_RGBA_ETC2_UNORM_BLOCK8", gli::FORMAT_RGBA_ETC2_UNORM_BLOCK8)
+		.value("FORMAT_RGBA_ETC2_SRGB_BLOCK8", gli::FORMAT_RGBA_ETC2_SRGB_BLOCK8)
+		.value("FORMAT_RGBA_ETC2_UNORM_BLOCK16", gli::FORMAT_RGBA_ETC2_UNORM_BLOCK16)
+		.value("FORMAT_RGBA_ETC2_SRGB_BLOCK16", gli::FORMAT_RGBA_ETC2_SRGB_BLOCK16)
+		.value("FORMAT_R_EAC_UNORM_BLOCK8", gli::FORMAT_R_EAC_UNORM_BLOCK8)
+		.value("FORMAT_R_EAC_SNORM_BLOCK8", gli::FORMAT_R_EAC_SNORM_BLOCK8)
+		.value("FORMAT_RG_EAC_UNORM_BLOCK16", gli::FORMAT_RG_EAC_UNORM_BLOCK16)
+		.value("FORMAT_RG_EAC_SNORM_BLOCK16", gli::FORMAT_RG_EAC_SNORM_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_4X4_UNORM_BLOCK16", gli::FORMAT_RGBA_ASTC_4X4_UNORM_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_4X4_SRGB_BLOCK16", gli::FORMAT_RGBA_ASTC_4X4_SRGB_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_5X4_UNORM_BLOCK16", gli::FORMAT_RGBA_ASTC_5X4_UNORM_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_5X4_SRGB_BLOCK16", gli::FORMAT_RGBA_ASTC_5X4_SRGB_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_5X5_UNORM_BLOCK16", gli::FORMAT_RGBA_ASTC_5X5_UNORM_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_5X5_SRGB_BLOCK16", gli::FORMAT_RGBA_ASTC_5X5_SRGB_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_6X5_UNORM_BLOCK16", gli::FORMAT_RGBA_ASTC_6X5_UNORM_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_6X5_SRGB_BLOCK16", gli::FORMAT_RGBA_ASTC_6X5_SRGB_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_6X6_UNORM_BLOCK16", gli::FORMAT_RGBA_ASTC_6X6_UNORM_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_6X6_SRGB_BLOCK16", gli::FORMAT_RGBA_ASTC_6X6_SRGB_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_8X5_UNORM_BLOCK16", gli::FORMAT_RGBA_ASTC_8X5_UNORM_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_8X5_SRGB_BLOCK16", gli::FORMAT_RGBA_ASTC_8X5_SRGB_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_8X6_UNORM_BLOCK16", gli::FORMAT_RGBA_ASTC_8X6_UNORM_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_8X6_SRGB_BLOCK16", gli::FORMAT_RGBA_ASTC_8X6_SRGB_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_8X8_UNORM_BLOCK16", gli::FORMAT_RGBA_ASTC_8X8_UNORM_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_8X8_SRGB_BLOCK16", gli::FORMAT_RGBA_ASTC_8X8_SRGB_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_10X5_UNORM_BLOCK16", gli::FORMAT_RGBA_ASTC_10X5_UNORM_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_10X5_SRGB_BLOCK16", gli::FORMAT_RGBA_ASTC_10X5_SRGB_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_10X6_UNORM_BLOCK16", gli::FORMAT_RGBA_ASTC_10X6_UNORM_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_10X6_SRGB_BLOCK16", gli::FORMAT_RGBA_ASTC_10X6_SRGB_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_10X8_UNORM_BLOCK16", gli::FORMAT_RGBA_ASTC_10X8_UNORM_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_10X8_SRGB_BLOCK16", gli::FORMAT_RGBA_ASTC_10X8_SRGB_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_10X10_UNORM_BLOCK16", gli::FORMAT_RGBA_ASTC_10X10_UNORM_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_10X10_SRGB_BLOCK16", gli::FORMAT_RGBA_ASTC_10X10_SRGB_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_12X10_UNORM_BLOCK16", gli::FORMAT_RGBA_ASTC_12X10_UNORM_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_12X10_SRGB_BLOCK16", gli::FORMAT_RGBA_ASTC_12X10_SRGB_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_12X12_UNORM_BLOCK16", gli::FORMAT_RGBA_ASTC_12X12_UNORM_BLOCK16)
+		.value("FORMAT_RGBA_ASTC_12X12_SRGB_BLOCK16", gli::FORMAT_RGBA_ASTC_12X12_SRGB_BLOCK16)
+		.value("FORMAT_RGB_PVRTC1_8X8_UNORM_BLOCK32", gli::FORMAT_RGB_PVRTC1_8X8_UNORM_BLOCK32)
+		.value("FORMAT_RGB_PVRTC1_8X8_SRGB_BLOCK32", gli::FORMAT_RGB_PVRTC1_8X8_SRGB_BLOCK32)
+		.value("FORMAT_RGB_PVRTC1_16X8_UNORM_BLOCK32", gli::FORMAT_RGB_PVRTC1_16X8_UNORM_BLOCK32)
+		.value("FORMAT_RGB_PVRTC1_16X8_SRGB_BLOCK32", gli::FORMAT_RGB_PVRTC1_16X8_SRGB_BLOCK32)
+		.value("FORMAT_RGBA_PVRTC1_8X8_UNORM_BLOCK32", gli::FORMAT_RGBA_PVRTC1_8X8_UNORM_BLOCK32)
+		.value("FORMAT_RGBA_PVRTC1_8X8_SRGB_BLOCK32", gli::FORMAT_RGBA_PVRTC1_8X8_SRGB_BLOCK32)
+		.value("FORMAT_RGBA_PVRTC1_16X8_UNORM_BLOCK32", gli::FORMAT_RGBA_PVRTC1_16X8_UNORM_BLOCK32)
+		.value("FORMAT_RGBA_PVRTC1_16X8_SRGB_BLOCK32", gli::FORMAT_RGBA_PVRTC1_16X8_SRGB_BLOCK32)
+		.value("FORMAT_RGBA_PVRTC2_4X4_UNORM_BLOCK8", gli::FORMAT_RGBA_PVRTC2_4X4_UNORM_BLOCK8)
+		.value("FORMAT_RGBA_PVRTC2_4X4_SRGB_BLOCK8", gli::FORMAT_RGBA_PVRTC2_4X4_SRGB_BLOCK8)
+		.value("FORMAT_RGBA_PVRTC2_8X4_UNORM_BLOCK8", gli::FORMAT_RGBA_PVRTC2_8X4_UNORM_BLOCK8)
+		.value("FORMAT_RGBA_PVRTC2_8X4_SRGB_BLOCK8", gli::FORMAT_RGBA_PVRTC2_8X4_SRGB_BLOCK8)
+		.value("FORMAT_RGB_ETC_UNORM_BLOCK8", gli::FORMAT_RGB_ETC_UNORM_BLOCK8)
+		.value("FORMAT_RGB_ATC_UNORM_BLOCK8", gli::FORMAT_RGB_ATC_UNORM_BLOCK8)
+		.value("FORMAT_RGBA_ATCA_UNORM_BLOCK16", gli::FORMAT_RGBA_ATCA_UNORM_BLOCK16)
+		.value("FORMAT_RGBA_ATCI_UNORM_BLOCK16", gli::FORMAT_RGBA_ATCI_UNORM_BLOCK16)
+		.value("FORMAT_L8_UNORM_PACK8", gli::FORMAT_L8_UNORM_PACK8)
+		.value("FORMAT_A8_UNORM_PACK8", gli::FORMAT_A8_UNORM_PACK8)
+		.value("FORMAT_LA8_UNORM_PACK8", gli::FORMAT_LA8_UNORM_PACK8)
+		.value("FORMAT_L16_UNORM_PACK16", gli::FORMAT_L16_UNORM_PACK16)
+		.value("FORMAT_A16_UNORM_PACK16", gli::FORMAT_A16_UNORM_PACK16)
+		.value("FORMAT_LA16_UNORM_PACK16", gli::FORMAT_LA16_UNORM_PACK16)
+		.value("FORMAT_BGR8_UNORM_PACK32", gli::FORMAT_BGR8_UNORM_PACK32)
+		.value("FORMAT_BGR8_SRGB_PACK32", gli::FORMAT_BGR8_SRGB_PACK32)
+		.value("FORMAT_RG3B2_UNORM_PACK8", gli::FORMAT_RG3B2_UNORM_PACK8)
+        .export_values();
+}
+
+
 PYBIND11_MODULE(_core, m) {
     m.doc() = "Wrapper for reading gli textures";
+    add_format_enum(m);
     m.def("load", &load, "Load texture file and return as NumPy array");
+    m.def("save", &save, "Save texture file and return as NumPy array");
 #ifdef VERSION_INFO
     m.attr("__version__") = MACRO_STRINGIFY(VERSION_INFO);
 #else
