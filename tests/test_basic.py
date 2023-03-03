@@ -9,35 +9,47 @@ def test_version():
 
 
 def test_load():
+    # Test for shape / dtype correctness
     img = pygli.load("data/kueken7_rgba16_sfloat.dds")
     expected_shape = [256, 256, 4]
     assert list(img.shape) == expected_shape
+    assert img.dtype == np.float32
 
     img = pygli.load("data/kueken7_rgba8_unorm.dds")
     expected_shape = [256, 256, 4]
     assert list(img.shape) == expected_shape
+    assert img.dtype == np.uint8
 
     img = pygli.load("data/array_r8_uint.dds")
     expected_shape = [256, 256, 1]
     assert list(img.shape) == expected_shape
+    assert img.dtype == np.uint8
+
+    # Test for assert condition on missing file
+    failed = False
+    try: 
+        img = pygli.load("not_a_file.dds")
+    except:
+        failed = True
+    assert(failed)
 
 
 def test_save():
     formats = {
-        pygli.Format.FORMAT_R8_UNORM_PACK8 : {"ch" : 1, "dtype" : np.uint8},
-        pygli.Format.FORMAT_RG8_UNORM_PACK8 : {"ch" : 2, "dtype" : np.uint8},
-        pygli.Format.FORMAT_RGB8_UNORM_PACK8 : {"ch" : 3, "dtype" : np.uint8},
-        pygli.Format.FORMAT_RGBA8_UNORM_PACK8 : {"ch" : 4, "dtype" : np.uint8},
+        pygli.Format.R8_UNORM_PACK8 : {"ch" : 1, "dtype" : np.uint8},
+        pygli.Format.RG8_UNORM_PACK8 : {"ch" : 2, "dtype" : np.uint8},
+        pygli.Format.RGB8_UNORM_PACK8 : {"ch" : 3, "dtype" : np.uint8},
+        pygli.Format.RGBA8_UNORM_PACK8 : {"ch" : 4, "dtype" : np.uint8},
         
-        pygli.Format.FORMAT_R16_UNORM_PACK16 : {"ch" : 1, "dtype" : np.uint16},
-        pygli.Format.FORMAT_RG16_UNORM_PACK16 : {"ch" : 2, "dtype" : np.uint16},
-        pygli.Format.FORMAT_RGB16_UNORM_PACK16 : {"ch" : 3, "dtype" : np.uint16},
-        pygli.Format.FORMAT_RGBA16_UNORM_PACK16 : {"ch" : 4, "dtype" : np.uint16},
+        pygli.Format.R16_UNORM_PACK16 : {"ch" : 1, "dtype" : np.uint16},
+        pygli.Format.RG16_UNORM_PACK16 : {"ch" : 2, "dtype" : np.uint16},
+        pygli.Format.RGB16_UNORM_PACK16 : {"ch" : 3, "dtype" : np.uint16},
+        pygli.Format.RGBA16_UNORM_PACK16 : {"ch" : 4, "dtype" : np.uint16},
 
-        pygli.Format.FORMAT_R32_SFLOAT_PACK32 : {"ch" : 1, "dtype" : np.float32},
-        pygli.Format.FORMAT_RG32_SFLOAT_PACK32 : {"ch" : 2, "dtype" : np.float32},
-        pygli.Format.FORMAT_RGB32_SFLOAT_PACK32 : {"ch" : 3, "dtype" : np.float32},
-        pygli.Format.FORMAT_RGBA32_SFLOAT_PACK32 : {"ch" : 4, "dtype" : np.float32},
+        pygli.Format.R32_SFLOAT_PACK32 : {"ch" : 1, "dtype" : np.float32},
+        pygli.Format.RG32_SFLOAT_PACK32 : {"ch" : 2, "dtype" : np.float32},
+        pygli.Format.RGB32_SFLOAT_PACK32 : {"ch" : 3, "dtype" : np.float32},
+        pygli.Format.RGBA32_SFLOAT_PACK32 : {"ch" : 4, "dtype" : np.float32},
     }
 
     out_dir = Path("test_output")
