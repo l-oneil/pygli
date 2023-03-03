@@ -1,6 +1,7 @@
 #include <vector>
 #include <cstdint>
 #include <iostream>
+#include <fstream>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/numpy.h>
@@ -14,6 +15,12 @@
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
 
 namespace py = pybind11;
+
+
+inline bool file_exists (const std::string& name) {
+    std::ifstream f(name.c_str());
+    return f.good();
+}
 
 
 py::array_t<float> half_to_float(py::array_t<uint16_t> half_arr) {
@@ -38,6 +45,9 @@ py::array_t<float> half_to_float(py::array_t<uint16_t> half_arr) {
 
 
 py::array load(std::string &filepath) {
+    if (!file_exists(filepath)){
+        throw std::invalid_argument("File doesn't exist");
+    }
     gli::texture tex = gli::load(filepath);
     assert(!tex.empty());
     auto format = tex.format();
@@ -481,10 +491,10 @@ bool save(std::string filepath, py::array array, gli::format format) {
     gli::texture tex = gli::texture(gli::TARGET_3D, format, ext, 1, 1, 1);
 
     // Populate Texture 
-    for (size_t y = 0; y < array.shape(1); y++) {
-        for (size_t x = 0; x < array.shape(0); x++) {
+    for (size_t y = 0; y < array.shape(0); y++) {
+        for (size_t x = 0; x < array.shape(1); x++) {
             const gli::extent3d coord(x, y, 0);
-            const size_t idx = y * array.shape(0) + x;
+            const size_t idx = y * array.shape(1) + x;
             switch(format){
                 case gli::FORMAT_R8_UNORM_PACK8:
                     write_texel<glm::u8>(buf.ptr, tex, coord, idx);
