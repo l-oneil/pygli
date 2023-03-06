@@ -491,6 +491,8 @@ bool save(std::string filepath, py::array array, gli::format format) {
     gli::texture tex = gli::texture(gli::TARGET_3D, format, ext, 1, 1, 1);
 
     // Populate Texture 
+    //TODO: move switch-case out of the inner-loop
+    //TODO: Fix writing 1-channel - seems to be broken
     for (size_t y = 0; y < array.shape(0); y++) {
         for (size_t x = 0; x < array.shape(1); x++) {
             const gli::extent3d coord(x, y, 0);
