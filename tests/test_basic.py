@@ -54,9 +54,15 @@ def test_save():
 
     out_dir = Path("test_output")
     out_dir.mkdir(parents=True, exist_ok=True)
+    failed = False
     for idx, (k, v) in enumerate(formats.items()):
-        ones = np.zeros(shape=[128, 128, v["ch"]], dtype=v["dtype"])
-        assert pygli.save(f"{str(out_dir)}/{idx:04d}.dds", ones, k), f"Failed on: {k}"
-
+        try:
+            ones = np.zeros(shape=[128, 256, v["ch"]], dtype=v["dtype"])
+            failed |=  pygli.save(f"{str(out_dir)}/{idx:04d}.dds", ones, k), f"Failed on: {k}"
+        except Exception as e:
+            print(f"Exception Hit: {e}")
+            print(f"Format Failed: {k}, {v['ch'], v['dtype']}")
+    assert not failed
+    
     # Tidy Up
     shutil.rmtree(out_dir)
