@@ -17,7 +17,7 @@
 #ifndef DEBUG
 #define LOGD(x) 
 #else
-#define LOGD(x) std::cout << "C++ Debug: " << x << std::endl; 
+#define LOGD(x) std::cout << "PyGLI Debug: " << x << std::endl; 
 #endif
 
 
@@ -482,7 +482,8 @@ py::array load(std::string &filepath) {
 
 
 template <typename T>
-void write_texel(void *buf_ptr, gli::texture &tex, const gli::extent3d &coord, const size_t idx) {
+void write_texel(void *buf_ptr, gli::texture &tex, const gli::extent3d &coord, const size_t y, const size_t x, const size_t h_stride,  const size_t w_stride) {
+    const auto idx = y * (h_stride / sizeof(T)) + x * (w_stride / sizeof(T));
     const T *texel = reinterpret_cast<T *>(buf_ptr);
     tex.store<T>(coord, 0, 0, 0, texel[idx]);
 }
@@ -508,313 +509,311 @@ bool save(std::string filepath, py::array array, gli::format format) {
     LOGD("Width: " + std::to_string(width));
     LOGD("Height Stride: " + std::to_string(h_stride));
     LOGD("Width Stride: " + std::to_string(w_stride));
-    LOGD("Format: " + buf.format);
 
     // Populate Texture 
     //TODO: move switch-case out of the inner-loop
     for (size_t y = 0; y < height; y++) {
         for (size_t x = 0; x < width; x++) {
             const gli::extent3d coord(x, y, 0);
-            const size_t idx = y * h_stride + x * w_stride;
             switch(format){
                 case gli::FORMAT_R8_UNORM_PACK8:
-                    write_texel<glm::u8>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_R8_SNORM_PACK8:
-                    write_texel<glm::u8>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i8>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_R8_USCALED_PACK8:
-                    write_texel<glm::u8>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_R8_SSCALED_PACK8:
-                    write_texel<glm::u8>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i8>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_R8_UINT_PACK8:
-                    write_texel<glm::u8>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_R8_SINT_PACK8:
-                    write_texel<glm::u8>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i8>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_R8_SRGB_PACK8:
-                    write_texel<glm::u8>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
 
                 case gli::FORMAT_RG8_UNORM_PACK8:
-                    write_texel<glm::u8vec2>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8vec2>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RG8_SNORM_PACK8:
-                    write_texel<glm::u8vec2>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i8vec2>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RG8_USCALED_PACK8:
-                    write_texel<glm::u8vec2>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8vec2>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RG8_SSCALED_PACK8:
-                    write_texel<glm::u8vec2>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i8vec2>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RG8_UINT_PACK8:
-                    write_texel<glm::u8vec2>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8vec2>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RG8_SINT_PACK8:
-                    write_texel<glm::u8vec2>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i8vec2>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RG8_SRGB_PACK8:
-                    write_texel<glm::u8vec2>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8vec2>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
 
                 case gli::FORMAT_RGB8_UNORM_PACK8:
-                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGB8_SNORM_PACK8:
-                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i8vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGB8_USCALED_PACK8:
-                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGB8_SSCALED_PACK8:
-                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i8vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGB8_UINT_PACK8:
-                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGB8_SINT_PACK8:
-                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i8vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGB8_SRGB_PACK8:
-                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
 
                 case gli::FORMAT_BGR8_UNORM_PACK8:
-                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_BGR8_SNORM_PACK8:
-                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i8vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_BGR8_USCALED_PACK8:
-                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_BGR8_SSCALED_PACK8:
-                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i8vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_BGR8_UINT_PACK8:
-                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_BGR8_SINT_PACK8:
-                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i8vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_BGR8_SRGB_PACK8:
-                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
 
                 case gli::FORMAT_RGBA8_UNORM_PACK8:
-                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA8_SNORM_PACK8:
-                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i8vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA8_USCALED_PACK8:
-                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA8_SSCALED_PACK8:
-                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i8vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA8_UINT_PACK8:
-                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA8_SINT_PACK8:
-                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i8vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA8_SRGB_PACK8:
-                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
 
                 case gli::FORMAT_RGBA8_UNORM_PACK32:
-                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA8_SNORM_PACK32:
-                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i8vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA8_USCALED_PACK32:
-                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA8_SSCALED_PACK32:
-                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i8vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA8_UINT_PACK32:
-                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA8_SINT_PACK32:
-                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i8vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA8_SRGB_PACK32:
-                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
 
                 case gli::FORMAT_R16_UNORM_PACK16:
-                    write_texel<glm::u16>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u16>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_R16_SNORM_PACK16:
-                    write_texel<glm::u16>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i16>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_R16_USCALED_PACK16:
-                    write_texel<glm::u16>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u16>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_R16_SSCALED_PACK16:
-                    write_texel<glm::u16>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i16>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_R16_UINT_PACK16:
-                    write_texel<glm::u16>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u16>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_R16_SINT_PACK16:
-                    write_texel<glm::u16>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i16>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_R16_SFLOAT_PACK16:
-                    write_texel<glm::u16>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u16>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
 
                 case gli::FORMAT_RG16_UNORM_PACK16:
-                    write_texel<glm::u16vec2>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u16vec2>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RG16_SNORM_PACK16:
-                    write_texel<glm::u16vec2>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i16vec2>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RG16_USCALED_PACK16:
-                    write_texel<glm::u16vec2>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u16vec2>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RG16_SSCALED_PACK16:
-                    write_texel<glm::u16vec2>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i16vec2>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RG16_UINT_PACK16:
-                    write_texel<glm::u16vec2>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u16vec2>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RG16_SINT_PACK16:
-                    write_texel<glm::u16vec2>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i16vec2>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RG16_SFLOAT_PACK16:
-                    write_texel<glm::u16vec2>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u16vec2>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
 
                 case gli::FORMAT_RGB16_UNORM_PACK16:
-                    write_texel<glm::u16vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u16vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGB16_SNORM_PACK16:
-                    write_texel<glm::u16vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i16vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGB16_USCALED_PACK16:
-                    write_texel<glm::u16vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u16vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGB16_SSCALED_PACK16:
-                    write_texel<glm::u16vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i16vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGB16_UINT_PACK16:
-                    write_texel<glm::u16vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u16vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGB16_SINT_PACK16:
-                    write_texel<glm::u16vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i16vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGB16_SFLOAT_PACK16:
-                    write_texel<glm::u16vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u16vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
 
                 case gli::FORMAT_RGBA16_UNORM_PACK16:
-                    write_texel<glm::u16vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u16vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA16_SNORM_PACK16:
-                    write_texel<glm::u16vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i16vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA16_USCALED_PACK16:
-                    write_texel<glm::u16vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u16vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA16_SSCALED_PACK16:
-                    write_texel<glm::u16vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i16vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA16_UINT_PACK16:
-                    write_texel<glm::u16vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u16vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA16_SINT_PACK16:
-                    write_texel<glm::u16vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i16vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA16_SFLOAT_PACK16:
-                    write_texel<glm::u16vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u16vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
 
                 case gli::FORMAT_R32_UINT_PACK32:
-                    write_texel<glm::u32>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u32>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_R32_SINT_PACK32:
-                    write_texel<glm::u32>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i32>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_R32_SFLOAT_PACK32:
-                    write_texel<glm::u32>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::f32>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
 
                 case gli::FORMAT_RG32_UINT_PACK32:
-                    write_texel<glm::u32vec2>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u32vec2>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RG32_SINT_PACK32:
-                    write_texel<glm::u32vec2>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i32vec2>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RG32_SFLOAT_PACK32:
-                    write_texel<glm::u32vec2>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::vec2>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
 
                 case gli::FORMAT_RGB32_UINT_PACK32:
-                    write_texel<glm::u32vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u32vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGB32_SINT_PACK32:
-                    write_texel<glm::u32vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i32vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGB32_SFLOAT_PACK32:
-                    write_texel<glm::u32vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::f32vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
 
                 case gli::FORMAT_RGBA32_UINT_PACK32:
-                    write_texel<glm::u32vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u32vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA32_SINT_PACK32:
-                    write_texel<glm::u32vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i32vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA32_SFLOAT_PACK32:
-                    write_texel<glm::u32vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
 
                 case gli::FORMAT_R64_UINT_PACK64:
-                    write_texel<glm::u64>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u64>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_R64_SINT_PACK64:
-                    write_texel<glm::u64>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i64>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_R64_SFLOAT_PACK64:
-                    write_texel<glm::u64>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::f64>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
 
                 case gli::FORMAT_RG64_UINT_PACK64:
-                    write_texel<glm::u64vec2>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u64vec2>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RG64_SINT_PACK64:
-                    write_texel<glm::u64vec2>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i64vec2>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RG64_SFLOAT_PACK64:
-                    write_texel<glm::u64vec2>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::f64vec2>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
 
                 case gli::FORMAT_RGB64_UINT_PACK64:
-                    write_texel<glm::u64vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u64vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGB64_SINT_PACK64:
-                    write_texel<glm::u64vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i64vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGB64_SFLOAT_PACK64:
-                    write_texel<glm::u64vec3>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::f64vec3>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
 
                 case gli::FORMAT_RGBA64_UINT_PACK64:
-                    write_texel<glm::u64vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u64vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA64_SINT_PACK64:
-                    write_texel<glm::u64vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::i64vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
                 case gli::FORMAT_RGBA64_SFLOAT_PACK64:
-                    write_texel<glm::u64vec4>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::f64vec4>(buf.ptr, tex, coord, y, x, h_stride, w_stride);
                     break;
 
                 //TODO:

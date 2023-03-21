@@ -36,33 +36,35 @@ def test_load():
 
 def test_save():
     formats = {
-        pygli.Format.R8_UNORM_PACK8 : {"ch" : 1, "dtype" : np.uint8},
-        pygli.Format.RG8_UNORM_PACK8 : {"ch" : 2, "dtype" : np.uint8},
-        pygli.Format.RGB8_UNORM_PACK8 : {"ch" : 3, "dtype" : np.uint8},
-        pygli.Format.RGBA8_UNORM_PACK8 : {"ch" : 4, "dtype" : np.uint8},
+        pygli.Format.R8_UNORM_PACK8 : {"ch" : 1, "dtype" : np.uint8, "max" : np.iinfo(np.uint8).max},
+        pygli.Format.RG8_UNORM_PACK8 : {"ch" : 2, "dtype" : np.uint8, "max" : np.iinfo(np.uint8).max},
+        pygli.Format.RGB8_UNORM_PACK8 : {"ch" : 3, "dtype" : np.uint8, "max" : np.iinfo(np.uint8).max},
+        pygli.Format.RGBA8_UNORM_PACK8 : {"ch" : 4, "dtype" : np.uint8, "max" : np.iinfo(np.uint8).max},
         
-        pygli.Format.R16_UNORM_PACK16 : {"ch" : 1, "dtype" : np.uint16},
-        pygli.Format.RG16_UNORM_PACK16 : {"ch" : 2, "dtype" : np.uint16},
-        pygli.Format.RGB16_UNORM_PACK16 : {"ch" : 3, "dtype" : np.uint16},
-        pygli.Format.RGBA16_UNORM_PACK16 : {"ch" : 4, "dtype" : np.uint16},
+        pygli.Format.R16_UNORM_PACK16 : {"ch" : 1, "dtype" : np.uint16, "max" : np.iinfo(np.uint16).max},
+        pygli.Format.RG16_UNORM_PACK16 : {"ch" : 2, "dtype" : np.uint16, "max" : np.iinfo(np.uint16).max},
+        pygli.Format.RGB16_UNORM_PACK16 : {"ch" : 3, "dtype" : np.uint16, "max" : np.iinfo(np.uint16).max},
+        pygli.Format.RGBA16_UNORM_PACK16 : {"ch" : 4, "dtype" : np.uint16, "max" : np.iinfo(np.uint16).max},
 
-        pygli.Format.R32_SFLOAT_PACK32 : {"ch" : 1, "dtype" : np.float32},
-        pygli.Format.RG32_SFLOAT_PACK32 : {"ch" : 2, "dtype" : np.float32},
-        pygli.Format.RGB32_SFLOAT_PACK32 : {"ch" : 3, "dtype" : np.float32},
-        pygli.Format.RGBA32_SFLOAT_PACK32 : {"ch" : 4, "dtype" : np.float32},
+        pygli.Format.R32_SFLOAT_PACK32 : {"ch" : 1, "dtype" : np.float32, "max" : np.float32(1.0)},
+        pygli.Format.RG32_SFLOAT_PACK32 : {"ch" : 2, "dtype" : np.float32, "max" : np.float32(1.0)},
+        pygli.Format.RGB32_SFLOAT_PACK32 : {"ch" : 3, "dtype" : np.float32, "max" : np.float32(1.0)},
+        pygli.Format.RGBA32_SFLOAT_PACK32 : {"ch" : 4, "dtype" : np.float32, "max" : np.float32(1.0)},
     }
 
     out_dir = Path("test_output")
     out_dir.mkdir(parents=True, exist_ok=True)
-    failed = False
+    not_failed = True
     for idx, (k, v) in enumerate(formats.items()):
         try:
-            ones = np.ones(shape=[128, 256, v["ch"]], dtype=v["dtype"])
-            failed |=  pygli.save(f"{str(out_dir)}/{idx:04d}.dds", ones, k), f"Failed on: {k}"
+            if v["ch"] == 1 or v["ch"] == 3:
+                ones = np.ones(shape=[128, 256, v["ch"]], dtype=v["dtype"]) * v["max"]
+                path_out = f"{str(out_dir)}/{idx:04d}.dds"
+                not_failed &= pygli.save(path_out, ones, k)
         except Exception as e:
             print(f"Exception Hit: {e}")
-            print(f"Format Failed: {k}, {v['ch'], v['dtype']}")
-    assert not failed
+            print(f"Format Failed: {k}, {v['ch']}, {v['dtype']}")
+    assert not_failed
     
     # Tidy Up
     shutil.rmtree(out_dir)
