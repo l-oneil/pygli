@@ -14,6 +14,13 @@
 #define STRINGIFY(x) #x
 #define MACRO_STRINGIFY(x) STRINGIFY(x)
 
+#ifndef DEBUG
+#define LOGD(x) 
+#else
+#define LOGD(x) std::cout << "C++ Debug: " << x << std::endl; 
+#endif
+
+
 namespace py = pybind11;
 
 
@@ -475,8 +482,8 @@ py::array load(std::string &filepath) {
 
 
 template <typename T>
-void write_texel(void *ptr, gli::texture &tex, const gli::extent3d &coord, const size_t idx) {
-    const T *texel = reinterpret_cast<T *>(ptr);
+void write_texel(void *buf_ptr, gli::texture &tex, const gli::extent3d &coord, const size_t idx) {
+    const T *texel = reinterpret_cast<T *>(buf_ptr);
     tex.store<T>(coord, 0, 0, 0, texel[idx]);
 }
 
@@ -490,13 +497,25 @@ bool save(std::string filepath, py::array array, gli::format format) {
     gli::extent3d ext = {buf.shape[1], buf.shape[0], 1};
     gli::texture tex = gli::texture(gli::TARGET_3D, format, ext, 1, 1, 1);
 
+    // NumPy Buffer info
+    const size_t height = array.shape(0);
+    const size_t width = array.shape(1);
+    const size_t h_stride = buf.strides[0];
+    const size_t w_stride = buf.strides[1];
+
+    // Log info
+    LOGD("Height: " + std::to_string(height));
+    LOGD("Width: " + std::to_string(width));
+    LOGD("Height Stride: " + std::to_string(h_stride));
+    LOGD("Width Stride: " + std::to_string(w_stride));
+    LOGD("Format: " + buf.format);
+
     // Populate Texture 
     //TODO: move switch-case out of the inner-loop
-    //TODO: Fix writing 1-channel - seems to be broken
-    for (size_t y = 0; y < array.shape(0); y++) {
-        for (size_t x = 0; x < array.shape(1); x++) {
+    for (size_t y = 0; y < height; y++) {
+        for (size_t x = 0; x < width; x++) {
             const gli::extent3d coord(x, y, 0);
-            const size_t idx = y * array.shape(1) + x;
+            const size_t idx = y * h_stride + x * w_stride;
             switch(format){
                 case gli::FORMAT_R8_UNORM_PACK8:
                     write_texel<glm::u8>(buf.ptr, tex, coord, idx);
@@ -508,7 +527,7 @@ bool save(std::string filepath, py::array array, gli::format format) {
                     write_texel<glm::u8>(buf.ptr, tex, coord, idx);
                     break;
                 case gli::FORMAT_R8_SSCALED_PACK8:
-                    write_texel<std::uint8_t>(buf.ptr, tex, coord, idx);
+                    write_texel<glm::u8>(buf.ptr, tex, coord, idx);
                     break;
                 case gli::FORMAT_R8_UINT_PACK8:
                     write_texel<glm::u8>(buf.ptr, tex, coord, idx);
