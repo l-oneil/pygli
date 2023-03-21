@@ -57,7 +57,7 @@ def test_save():
     failed = False
     for idx, (k, v) in enumerate(formats.items()):
         try:
-            ones = np.zeros(shape=[128, 256, v["ch"]], dtype=v["dtype"])
+            ones = np.ones(shape=[128, 256, v["ch"]], dtype=v["dtype"])
             failed |=  pygli.save(f"{str(out_dir)}/{idx:04d}.dds", ones, k), f"Failed on: {k}"
         except Exception as e:
             print(f"Exception Hit: {e}")
